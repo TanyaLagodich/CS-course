@@ -44,6 +44,6 @@ class BCD {
 }
 
 const n = new BCD(65536);
-console.log(n.valueOf(), n.valueOf().toString(2));
-console.log(n.get(0), n.get(1), n.get(2), n.get(3), n.get(4), n.get(5));
-console.log(n.get(-1), n.get(-2), n.get(-3), n.get(-4), n.get(-5));
+console.log(n.valueOf(), n.valueOf().toString(2)); // 415030 1100101010100110110
+console.log(n.get(0), n.get(1), n.get(2), n.get(3), n.get(4), n.get(5)); // 6 5 5 3 6 -1
+console.log(n.get(-1), n.get(-2), n.get(-3), n.get(-4), n.get(-5)); // 3 5 5 6 -1
