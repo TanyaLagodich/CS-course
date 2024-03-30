@@ -1,0 +1,14 @@
+{
+  "name": "bcd",
+  "version": "1.0.0",
+  "description": "Digits should be encoded inside JS numbers. Each number should consist of 7 digits in BCD format for efficient encoding in SMI.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}

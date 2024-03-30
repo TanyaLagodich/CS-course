@@ -13,11 +13,26 @@ const BCD_ENCODING = {
     9: 0b1001,
 }
 
+// 123456789 -> 876543210
+// 1000_0111_0110_0101_0100_0011_0010_0001_0000
+
 class BCD {
     #BCD_SIZE = 7;
+    MASK = 0b1111 << 28;
     numbers = [];
+    isNegative = false;
 
     constructor(num) {
+        if (num < 0) {
+            this.isNegative = true;
+            this.numbers.push(0);
+            this.numbers[0] |= 1 << 31;
+            num = this._applyNineComplement(Math.abs(num));
+
+        } else {
+            this.numbers.push(0);
+            this.numbers[0] |= 0 << 31;
+        }
         this.length = this._getNumberLength(num);
         this._convertToBCD(num);
     }
@@ -26,10 +41,23 @@ class BCD {
         return Math.floor(Math.log10(Math.abs(num))) + 1;
     }
 
+    _applyNineComplement(num) {
+        let result = 0;
+        let x = num;
+        let place = 1;
+        while (x > 0) {
+            let digit = x % 10;
+            x = Math.floor(x / 10);
+            result += (9 - digit) * place;
+            place *= 10;
+        }
+
+        return result;
+    }
+
     _convertToBCD(num) {
-        this.numbers.push(0)
         const customLength = this._getNumberLength(num);
-        // это чтобы класть в this.numbers числа по порядке слева направо
+        // это чтобы класть в this.numbers числа по порядку слева направо
         let x = customLength < this.#BCD_SIZE ? num : Math.floor(num / 10 ** (customLength - this.#BCD_SIZE));
         const left = customLength < this.#BCD_SIZE ? 0 : Math.floor(num % 10 ** (customLength - this.#BCD_SIZE))
         let shift = 0;
@@ -40,12 +68,33 @@ class BCD {
             shift++;
         }
         if (left > 0) {
+            this.numbers.push(0);
             this._convertToBCD(left);
         }
     }
 
+    isNegativeBCD() {
+        const mask = 0b1111 << 28;
+        return (this.numbers[0] & mask) !== 0;
+    }
+
     valueOf() {
-        return BigInt(this.numbers.reduce((acc, num, index) => acc << (4 * index) | num, 0));
+        // 0x0FFFFFFF === 0000 1111 1111 1111 1111 1111 1111 1111
+        // Инициализируем acc как BigInt для корректной обработки больших чисел
+        let acc = BigInt(0);
+
+        // Преобразуем каждое число в BigInt и выполняем операции
+        this.numbers.forEach((num, index) => {
+            acc = (acc << (BigInt(4) * BigInt(index))) | (BigInt(num) & BigInt(0x0FFFFFFF));
+        });
+
+        if (this.isNegativeBCD()) {
+            // Если число отрицательное, нужно добавить бит знака в начало
+            // Важно: в JavaScript операция сдвига на BigInt ограничена 31 битом, так что используем умножение
+            acc = ((BigInt(1) << BigInt(31)) | acc);
+        }
+
+        return acc;
     }
 
     // 0000_0000_0000_0000_0000_0001_0010_0011
@@ -63,24 +112,16 @@ class BCD {
         // если последний, то считает this.length % 7
         const lengthOfLevel = this.length > this.#BCD_SIZE ?
             level < this.numbers.length - 1 ?  this.#BCD_SIZE : Math.floor(this.length % 7)
-    : this.length;
+            : this.length;
         const mask = createMask(4, lengthOfLevel * 4 - (space * 4));
-        return (this.numbers[level] & mask) >>> ((Math.abs(lengthOfLevel - space - 1)) * 4);
+        const num = (this.numbers[level] & mask) >>> ((Math.abs(lengthOfLevel - space - 1)) * 4);
+
+        return this.isNegative ? 9 - num : num;
     }
 }
 
-const n = new BCD(65536);
-console.log(n.valueOf(), n.valueOf().toString(2).padStart(32, '0')); // 415030n 00000000000001100101010100110110
-console.log(n.get(0), n.get(1), n.get(2), n.get(3), n.get(4), n.get(5)); // 6 5 5 3 6 -1
-console.log(n.get(-1), n.get(-2), n.get(-3), n.get(-4), n.get(-5), n.get(-6)); // 6 3 5 5 6 -1
+module.exports = BCD;
 
-const short = new BCD(123);
-console.log(short.valueOf(), short.valueOf().toString(2).padStart(32, '0')); // 291n 00000000000000000000000100100011
-console.log(short.get(0), short.get(1), short.get(2), short.get(3)); // 1 2 3 -1
-console.log(short.get(-1), short.get(-2), short.get(-3), short.get(-4)); // 3 2 1 -1
-
-const big = new BCD(12345678);
-console.log(big.valueOf(), big.valueOf().toString(2).padStart(32, '0')); // 305419896n 00010010001101000101011001111000
-console.log('big', big.get(0), big.get(1), big.get(2), big.get(3), big.get(4), big.get(5), big.get(6), big.get(7), big.get(8)); // 1 2 3 4 5 6 7 8 -1
-console.log('big', big.get(-1), big.get(-2), big.get(-3), big.get(-4), big.get(-5), big.get(-6), big.get(-7), big.get(-8), big.get(-9)); // 8 7 6 5 4 3 2 1 -1
-
+const negative = new BCD(-123);
+console.log(negative.valueOf(), negative.valueOf().toString(2).padStart(32,'0')); // 2147485814n 10000000000000000000100001110110
+console.log(negative.get(-1), negative.get(1), negative.get(2), negative.get(9))
