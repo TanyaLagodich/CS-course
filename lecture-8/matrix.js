@@ -26,6 +26,16 @@ class Matrix {
         return this.array[this.#getIndex(...indexes)];
     }
 
+    *values() {
+        for (let i = 0; i < this.array.length; i++) {
+            yield this.array[i];
+        }
+    }
+
+    [Symbol.iterator]() {
+        return this.values();
+    }
+
     get buffer() {
         return this.array;
     }
@@ -54,3 +64,7 @@ console.log(matrix3n4n5.get(1, 0, 0)); // 5
 console.log(matrix3n4n5.get(1, 1, 0)); // 6
 console.log(matrix3n4n5.get(1, 0, 1)); // 7
 console.log(matrix3n4n5.get(1, 1, 1)); // 8
+
+
+console.log(Array.from(matrix3n4n5.values())); // [1, 3, 2, 4, 5, 7, 6, 8]
+
