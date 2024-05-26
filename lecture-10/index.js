@@ -22,7 +22,6 @@ class Memory {
             throw new Error('Stack overflow');
         }
 
-        console.log(this.stackPointer);
         this.stackPointer = new Pointer(this, this.stackPointer ? this.stackPointer.size + this.stackPointer.offset : 0, byteLength);
         new Uint8Array(this.buffer, this.stackPointer.offset, byteLength).set(new Uint8Array(arrayBuffer));
 
@@ -41,7 +40,7 @@ class Memory {
         const lastPointer = this.allocations.pop();
 
         if (this.allocations.length === 0) {
-            return 'Stack is empty now';
+            this.stackPointer = null;
         } else {
             this.stackPointer = this.allocations[this.allocations.length - 1];
         }
