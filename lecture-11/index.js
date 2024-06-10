@@ -29,12 +29,14 @@ class HashMap {
 
     get(key) {
         const hash = this._getHash(key);
-        let current = this.buffer[hash].head;
-        while (current) {
-            if (current.value.key === key) {
-                return current.value.value;
+        if (this.buffer[hash]) {
+            let current = this.buffer[hash].head;
+            while (current) {
+                if (current.value.key === key) {
+                    return current.value.value;
+                }
+                current = current.next;
             }
-            current = current.next;
         }
         return undefined;
     }
@@ -49,7 +51,6 @@ class HashMap {
                 }
                 current = current.next;
             }
-            return false;
         }
         return false;
     }
@@ -158,3 +159,6 @@ console.log(map.delete(document)); // 100
 console.log(map.has(document)); // false
 
 console.log(map.delete('foo')); // 1
+
+
+console.log(map.has(41412)); // false
