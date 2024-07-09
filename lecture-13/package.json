@@ -1,0 +1,14 @@
+{
+  "name": "lecture-13",
+  "version": "1.0.0",
+  "description": "## Реализовать класс для представления графа с помощью матрицы смежности",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "graphviz": "^0.0.9"
+  }
+}
